@@ -23,7 +23,7 @@ struct Color {
 }
 
 // We will use this error type for these `TryFrom` conversions.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Debug, PartialEq)]
 enum IntoColorError {
     // Incorrect length of slice
     BadLen,
@@ -61,40 +61,9 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
     fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
-        // eprintln!("slice={slice:?}");
         if slice.len() != 3 {
             return Err(IntoColorError::BadLen);
         }
-
-        // // Redundant approach 1
-        // let check_nums = slice.iter().try_for_each(|i| {
-        //     if (0..=255_i16).contains(i) {
-        //         Ok(())
-        //     } else {
-        //         Err(IntoColorError::IntConversion)
-        //     }
-        // });
-        // let Ok(()) = check_nums else {
-        //     return Err(IntoColorError::IntConversion);
-        // };
-        // // End redundant approach 1
-
-        // // Redundant approach 2
-        // let vec = slice
-        //     .iter()
-        //     .map(|&i| -> Result<u8, IntoColorError> {
-        //         u8::try_from(i).map_err(|_| IntoColorError::IntConversion)
-        //     })
-        //     .filter(Result::is_ok)
-        //     .map(Result::unwrap)
-        //     .collect::<Vec<u8>>();
-
-        // if vec.len() != 3 {
-        //     return Err(IntoColorError::IntConversion);
-        // }
-
-        // let (red, green, blue) = (vec[0], vec[1], vec[2]);
-        // // End redundant approach 2
 
         let mut rgb = vec![];
         for i in slice {
