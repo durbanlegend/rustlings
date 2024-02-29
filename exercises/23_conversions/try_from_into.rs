@@ -11,6 +11,9 @@
 // a hint.
 
 use std::convert::{TryFrom, TryInto};
+// use std::fs::rename;
+// use std::io::{stdout, Write};
+// use std::path::Path;
 
 #[derive(Debug, PartialEq)]
 struct Color {
@@ -20,7 +23,7 @@ struct Color {
 }
 
 // We will use this error type for these `TryFrom` conversions.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 enum IntoColorError {
     // Incorrect length of slice
     BadLen,
@@ -58,20 +61,52 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
     fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        // eprintln!("slice={slice:?}");
         if slice.len() != 3 {
             return Err(IntoColorError::BadLen);
         }
+
+        // // Redundant approach 1
+        // let check_nums = slice.iter().try_for_each(|i| {
+        //     if (0..=255_i16).contains(i) {
+        //         Ok(())
+        //     } else {
+        //         Err(IntoColorError::IntConversion)
+        //     }
+        // });
+        // let Ok(()) = check_nums else {
+        //     return Err(IntoColorError::IntConversion);
+        // };
+        // // End redundant approach 1
+
+        // // Redundant approach 2
+        // let vec = slice
+        //     .iter()
+        //     .map(|&i| -> Result<u8, IntoColorError> {
+        //         u8::try_from(i).map_err(|_| IntoColorError::IntConversion)
+        //     })
+        //     .filter(Result::is_ok)
+        //     .map(Result::unwrap)
+        //     .collect::<Vec<u8>>();
+
+        // if vec.len() != 3 {
+        //     return Err(IntoColorError::IntConversion);
+        // }
+
+        // let (red, green, blue) = (vec[0], vec[1], vec[2]);
+        // // End redundant approach 2
+
+        let mut rgb = vec![];
         for i in slice {
-            if !(0..=255).contains(i) {
+            let result = u8::try_from(*i);
+            let Ok(color) = result else {
                 return Err(IntoColorError::IntConversion);
-            }
+            };
+            rgb.push(color);
         }
-        let vec = slice.iter().map(|&raw| raw as u8).collect::<Vec<u8>>();
-        Ok(Color {
-            red: vec[0],
-            green: vec[1],
-            blue: vec[2],
-        })
+        let (red, green, blue) = (rgb[0], rgb[1], rgb[2]);
+
+        Ok(Color { red, green, blue })
     }
 }
 
