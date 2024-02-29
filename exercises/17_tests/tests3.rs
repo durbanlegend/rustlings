@@ -7,7 +7,8 @@
 // Execute `rustlings hint tests3` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
+// I AM DONE
+use std::convert::TryInto;
 
 pub fn is_even(num: i32) -> bool {
     num % 2 == 0
@@ -17,13 +18,20 @@ pub fn is_even(num: i32) -> bool {
 mod tests {
     use super::*;
 
+    pub fn random() -> i32 {
+        // Random number trick
+        let i = 0;
+        let r = &i as *const _ as u32;
+        r.try_into().unwrap()
+    }
+
     #[test]
     fn is_true_when_even() {
-        assert!();
+        assert!(is_even(random() * 2));
     }
 
     #[test]
     fn is_false_when_odd() {
-        assert!();
+        assert!(!is_even(random() * 2 - 1));
     }
 }
