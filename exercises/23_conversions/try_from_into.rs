@@ -1,3 +1,4 @@
+#![warn(clippy::pedantic)]
 // try_from_into.rs
 //
 // TryFrom is a simple and safe type conversion that may fail in a controlled
@@ -41,6 +42,7 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
     fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        Self::try_from(&[tuple.0, tuple.1, tuple.2][..])
     }
 }
 
@@ -48,6 +50,7 @@ impl TryFrom<(i16, i16, i16)> for Color {
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
     fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        Self::try_from(&arr[..])
     }
 }
 
@@ -55,6 +58,20 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
     fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        if slice.len() != 3 {
+            return Err(IntoColorError::BadLen);
+        }
+        for i in slice {
+            if !(0..=255).contains(i) {
+                return Err(IntoColorError::IntConversion);
+            }
+        }
+        let vec = slice.iter().map(|&raw| raw as u8).collect::<Vec<u8>>();
+        Ok(Color {
+            red: vec[0],
+            green: vec[1],
+            blue: vec[2],
+        })
     }
 }
 
