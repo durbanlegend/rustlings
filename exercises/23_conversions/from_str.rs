@@ -52,51 +52,34 @@ enum ParsePersonError {
 impl FromStr for Person {
     type Err = ParsePersonError;
     fn from_str(s: &str) -> Result<Person, Self::Err> {
-        // 1. If the length of the provided string is 0, an error should be returned
         if s.is_empty() {
             return Err(ParsePersonError::Empty);
         }
 
-        // 2. Split the given string on the commas present in it
-        let vec = &s.split(",").take(3).collect::<Vec<&str>>();
-
-        // 3. Only 2 elements should be returned from the split, otherwise return an
-        //    error
-        if vec.len() > 2 {
+        let mut split = s.split(",");
+        let Some(name) = split.next() else {
             return Err(ParsePersonError::BadLen);
-        }
-
-        let name_age_str = vec.join(",");
-        // println!("name_age_str = {name_age_str:?}");
-
-        if name_age_str.is_empty() {
-            return Err(ParsePersonError::Empty);
-        }
-
-        // 4. Extract the first element from the split operation and use it as the name
-        // 5. Extract the other element from the split operation...
-        // 6. If while extracting the name and the age something goes wrong, an error
-        //    should be returned
-        let (name, age) = name_age_str
-            .split_once(",")
-            .ok_or(ParsePersonError::BadLen)?;
-
-        // println!("name={name}, age={age}");
+        };
 
         if name.is_empty() {
             return Err(ParsePersonError::NoName);
+        }
+
+        let Some(second) = split.next() else {
+            return Err(ParsePersonError::BadLen);
         };
 
-        // 5. ... and parse it into a `usize` as the age with something like `"4".parse::<usize>()`
-        let age = age
-            .parse::<usize>()
-            .map_err(|e| ParsePersonError::ParseInt(e))?;
+        if split.next().is_some() {
+            return Err(ParsePersonError::BadLen);
+        }
 
-        // println!("age={age}");
+        let age = match second.parse() {
+            Ok(age) => age,
+            Err(e) => return Err(ParsePersonError::ParseInt(e)),
+        };
 
         let name = name.to_string();
 
-        // If everything goes well, then return a Result of a Person object
         Ok(Person { name, age })
     }
 }
