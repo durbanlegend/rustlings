@@ -73,9 +73,9 @@ impl FromStr for Person {
             return Err(ParsePersonError::BadLen);
         }
 
-        let age = match second.parse() {
-            Ok(age) => age,
-            Err(e) => return Err(ParsePersonError::ParseInt(e)),
+        let parse = second.parse();
+        let Ok(age) = parse else {
+            return Err(ParsePersonError::ParseInt(parse.err().unwrap()));
         };
 
         let name = name.to_string();
