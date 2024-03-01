@@ -66,7 +66,7 @@ impl TryFrom<&[i16]> for Color {
         }
 
         // The magic is in simply collecting to a Result<Vec<_>, _> instead of a Vec<Result<_>, _>.,
-        // regardless of wheether this is specified as the type of the result variable or in a
+        // regardless of whether this is specified as the type of the result variable or in a
         // turbofish in collect().
         let result: Result<Vec<_>, _> = slice.iter().map(|i| u8::try_from(*i)).collect();
         let Ok(rgb) = result else {
