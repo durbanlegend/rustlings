@@ -65,14 +65,16 @@ impl TryFrom<&[i16]> for Color {
             return Err(IntoColorError::BadLen);
         }
 
-        let result = slice
+        // The magic is in simply collecting to a Result<Vec<_>, _> instead of a Vec<Result<_>, _>.,
+        // regardless of wheether this is specified as the type of the result variable or in a
+        // turbofish in collect().
+        let result: Result<Vec<_>, _> = slice
             .iter()
             .map(|i| u8::try_from(*i).map_err(|_| IntoColorError::IntConversion))
-            .collect::<Result<Vec<_>, _>>();
-        let Ok(rgb): Result<Vec<_>, _> = result else {
+            .collect();
+        let Ok(rgb) = result else {
             return Err(result.unwrap_err());
         };
-
         let (red, green, blue) = (rgb[0], rgb[1], rgb[2]);
 
         Ok(Color { red, green, blue })
