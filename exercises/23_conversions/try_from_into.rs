@@ -65,14 +65,14 @@ impl TryFrom<&[i16]> for Color {
             return Err(IntoColorError::BadLen);
         }
 
-        let mut rgb = vec![];
-        for i in slice {
-            let result = u8::try_from(*i);
-            let Ok(color) = result else {
-                return Err(IntoColorError::IntConversion);
-            };
-            rgb.push(color);
-        }
+        let result = slice
+            .iter()
+            .map(|i| u8::try_from(*i).map_err(|_| IntoColorError::IntConversion))
+            .collect::<Result<Vec<_>, _>>();
+        let Ok(rgb): Result<Vec<_>, _> = result else {
+            return Err(result.unwrap_err());
+        };
+
         let (red, green, blue) = (rgb[0], rgb[1], rgb[2]);
 
         Ok(Color { red, green, blue })
